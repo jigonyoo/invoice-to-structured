@@ -1,0 +1,41 @@
+{
+  "_comment": "Synthetic AWS Textract AnalyzeExpense response for a SCANNED copy of INV-1003. Mirrors the real API shape (ExpenseDocuments -> SummaryFields / LineItemGroups, each ValueDetection carrying an OCR Confidence 0-100). No client data. The TAX field is read with lower OCR confidence (88.5) and the printed total is arithmetically wrong, so the pipeline flags BOTH an OCR-trust issue and a maths error.",
+  "ExpenseDocuments": [
+    {
+      "SummaryFields": [
+        {"Type": {"Text": "VENDOR_NAME", "Confidence": 99.2}, "ValueDetection": {"Text": "Sunrise Logistics GmbH", "Confidence": 98.4}},
+        {"Type": {"Text": "INVOICE_RECEIPT_ID", "Confidence": 99.0}, "ValueDetection": {"Text": "INV-1003", "Confidence": 99.1}},
+        {"Type": {"Text": "INVOICE_RECEIPT_DATE", "Confidence": 98.1}, "ValueDetection": {"Text": "2026-06-18", "Confidence": 97.5}},
+        {"Type": {"Text": "DUE_DATE", "Confidence": 97.4}, "ValueDetection": {"Text": "2026-07-18", "Confidence": 96.8}},
+        {"Type": {"Text": "RECEIVER_NAME", "Confidence": 96.0}, "ValueDetection": {"Text": "Meridian Foods", "Confidence": 95.0}},
+        {"Type": {"Text": "SUBTOTAL", "Confidence": 95.5}, "ValueDetection": {"Text": "EUR 1,330.00", "Confidence": 93.2}},
+        {"Type": {"Text": "TAX", "Confidence": 92.0}, "ValueDetection": {"Text": "EUR 252.70", "Confidence": 88.5}},
+        {"Type": {"Text": "TOTAL", "Confidence": 98.3}, "ValueDetection": {"Text": "EUR 1,632.70", "Confidence": 97.9}}
+      ],
+      "LineItemGroups": [
+        {
+          "LineItems": [
+            {"LineItemExpenseFields": [
+              {"Type": {"Text": "ITEM", "Confidence": 96.8}, "ValueDetection": {"Text": "Pallet freight Hamburg - Rotterdam", "Confidence": 96.1}},
+              {"Type": {"Text": "QUANTITY", "Confidence": 98.5}, "ValueDetection": {"Text": "8", "Confidence": 98.0}},
+              {"Type": {"Text": "UNIT_PRICE", "Confidence": 95.6}, "ValueDetection": {"Text": "120.00", "Confidence": 95.2}},
+              {"Type": {"Text": "PRICE", "Confidence": 97.2}, "ValueDetection": {"Text": "960.00", "Confidence": 97.0}}
+            ]},
+            {"LineItemExpenseFields": [
+              {"Type": {"Text": "ITEM", "Confidence": 94.9}, "ValueDetection": {"Text": "Cold-chain surcharge", "Confidence": 94.5}},
+              {"Type": {"Text": "QUANTITY", "Confidence": 97.8}, "ValueDetection": {"Text": "8", "Confidence": 97.5}},
+              {"Type": {"Text": "UNIT_PRICE", "Confidence": 95.3}, "ValueDetection": {"Text": "35.00", "Confidence": 95.0}},
+              {"Type": {"Text": "PRICE", "Confidence": 96.7}, "ValueDetection": {"Text": "280.00", "Confidence": 96.5}}
+            ]},
+            {"LineItemExpenseFields": [
+              {"Type": {"Text": "ITEM", "Confidence": 93.4}, "ValueDetection": {"Text": "Customs handling", "Confidence": 93.0}},
+              {"Type": {"Text": "QUANTITY", "Confidence": 98.4}, "ValueDetection": {"Text": "1", "Confidence": 98.2}},
+              {"Type": {"Text": "UNIT_PRICE", "Confidence": 95.1}, "ValueDetection": {"Text": "90.00", "Confidence": 94.8}},
+              {"Type": {"Text": "PRICE", "Confidence": 96.2}, "ValueDetection": {"Text": "90.00", "Confidence": 95.9}}
+            ]}
+          ]
+        }
+      ]
+    }
+  ]
+}

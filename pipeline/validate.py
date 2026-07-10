@@ -24,6 +24,10 @@ TOL = 0.01
 REQUIRED = ["invoice_number", "vendor", "invoice_date", "currency", "total"]
 # Below this confidence, always send to a human even if no hard error fired.
 REVIEW_THRESHOLD = 0.80
+# Per-field OCR confidence (0-1) under this is a warning; a lowest-field score
+# under the hard floor forces review even on an arithmetically clean invoice.
+OCR_WARN = 0.90
+OCR_FLOOR = 0.80
 
 
 @dataclass
@@ -64,7 +68,15 @@ def _isclose(a, b, tol=TOL):
     return a is not None and b is not None and abs(a - b) <= tol
 
 
-def validate(inv: Invoice) -> ValidationResult:
+def validate(inv: Invoice, ocr: dict | None = None) -> ValidationResult:
+    """Validate an invoice.
+
+    ``ocr`` is the optional per-field OCR confidence report from the Textract
+    extractor ({"min", "avg", "low_fields"}). When present, low OCR confidence
+    can escalate an otherwise arithmetically clean invoice to human review, and
+    it caps the overall confidence score. Extraction source is swappable; the
+    trust logic is the same.
+    """
     issues: list[Issue] = []
 
     # 1. Required fields present.
@@ -121,11 +133,27 @@ def validate(inv: Invoice) -> ValidationResult:
                 )
             )
 
-    # 6. Confidence score: start at 1.0, penalise findings, floor at 0.
+    # 6. OCR trust (only when the source is an OCR engine like Textract).
+    if ocr:
+        for field in ocr.get("low_fields") or []:
+            issues.append(
+                Issue("low_ocr_confidence", "warning",
+                      f"OCR confidence below {int(OCR_WARN*100)}% for field: {field}")
+            )
+        if ocr.get("min") is not None and ocr["min"] < OCR_FLOOR:
+            issues.append(
+                Issue("ocr_below_floor", "error",
+                      f"Lowest field OCR confidence {ocr['min']} is below {OCR_FLOOR}")
+            )
+
+    # 7. Confidence score: start at 1.0, penalise findings, floor at 0.
     penalty = 0.0
     for i in issues:
         penalty += 0.34 if i.severity == "error" else 0.08
     confidence = max(0.0, round(1.0 - penalty, 3))
+    # OCR uncertainty caps trust: can't be more confident than the reading was.
+    if ocr and ocr.get("avg") is not None:
+        confidence = min(confidence, ocr["avg"])
 
     needs_review = bool([i for i in issues if i.severity == "error"]) or confidence < REVIEW_THRESHOLD
     return ValidationResult(

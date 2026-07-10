@@ -1,6 +1,7 @@
 # Runtime
-pdfplumber>=0.11      # PDF text extraction
+pdfplumber>=0.11      # PDF text extraction (text-based PDFs)
 openai>=1.0           # only needed for --mode llm (structured extraction)
+boto3>=1.34           # only needed for AWS Textract (scanned / image documents)
 
 # Dev / sample generation only
 reportlab>=4.0        # generates the synthetic sample invoices in scripts/

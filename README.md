@@ -18,14 +18,14 @@ human owns the review gate.
 ## What it does
 
 ```
-   PDF invoice
+   invoice  (text PDF  ── or ──  scanned / photo)
         │
         ▼
-  1. Extract text            pdfplumber
+  1. Extract               pdfplumber (text)  ── or ──  AWS Textract (scanned)
         │
         ▼
-  2. Structure to schema     OpenAI (JSON mode)  ── or ──  offline heuristic
-        │                    vendor, invoice #, dates, line items, totals, currency
+  2. Structure to schema   OpenAI (JSON mode) / offline heuristic / Textract AnalyzeExpense
+        │                  vendor, invoice #, dates, line items, totals, currency (+ OCR confidence)
         ▼
   3. Validate (deterministic)
         │   • line amount  == qty × unit price
@@ -100,22 +100,57 @@ Confident invoices flow straight through; only the exceptions cost human time.
 | `offline` | demo / text-based PDFs / no key | no |
 | `llm` | production, varied real-world layouts | yes (`OPENAI_API_KEY`) |
 | `auto` (default) | LLM if a key is present, else offline | — |
+| Textract | **scanned / photographed** invoices | yes (AWS creds) |
 
-The two extractors return the same schema, so the validation layer and outputs
-are identical regardless of how the fields were pulled.
+The extractors all return the same schema, so the validation layer and outputs
+are identical regardless of how the fields were pulled. The extraction source is
+swappable; the trust layer is constant.
+
+## Scanned / image documents (AWS Textract)
+
+Most real accounts-payable documents are scans or phone photos, not text PDFs.
+`pipeline/textract_extract.py` uses AWS Textract's purpose-built `AnalyzeExpense`
+API to read those, maps the result onto the same `Invoice` schema, and — because
+Textract returns a per-field OCR confidence — folds that confidence into the
+review decision. A maths-clean invoice whose fields were read with low OCR
+confidence is still escalated to a human.
+
+```bash
+# Offline: parses a bundled AnalyzeExpense response, no AWS account needed.
+python textract_demo.py
+
+# Live on your own scan (AWS free tier = 1,000 pages/month):
+export AWS_ACCESS_KEY_ID=...  AWS_SECRET_ACCESS_KEY=...  AWS_DEFAULT_REGION=us-east-1
+python textract_demo.py --image path/to/scanned_invoice.png
+```
+
+Offline demo output (a scanned copy of INV-1003):
+
+```
+OCR confidence  avg=0.959  min=0.885  low-confidence fields=['tax']
+...
+Decision: NEEDS HUMAN REVIEW   (confidence 0.58)
+  -> error: subtotal 1330.0 + tax 252.7 = 1582.7 but total is 1632.7
+  -> warning: OCR confidence below 90% for field: tax
+```
+
+Two independent trust signals fire on one scanned image: the arithmetic is wrong
+**and** a key field was read with low OCR confidence — both routed to review.
 
 ## Project layout
 
 ```
 pipeline/
-  schema.py      Invoice / LineItem dataclasses + the JSON shape the LLM targets
-  extract.py     PDF → text, and text → Invoice (LLM or offline)
-  validate.py    deterministic checks → confidence + needs_review  ← the core
-run.py           batch a folder → structured.json / .csv / review_queue.csv
-tests/           unit tests for the validation engine
-scripts/         generate the synthetic sample invoices
-sample_data/     3 fictional invoices (one with a deliberate error)
-sample_output/   committed snapshot of a run
+  schema.py           Invoice / LineItem dataclasses + the JSON shape the LLM targets
+  extract.py          PDF → text, and text → Invoice (LLM or offline heuristic)
+  textract_extract.py scanned/image → AWS Textract AnalyzeExpense → Invoice + OCR confidence
+  validate.py         deterministic checks (+ optional OCR confidence) → needs_review  ← the core
+run.py                batch a folder of text PDFs → structured.json / .csv / review_queue.csv
+textract_demo.py      one scanned invoice → Textract → validated data (offline sample or live)
+tests/                unit tests for the validation engine and the Textract parser
+scripts/              generate the synthetic sample invoices
+sample_data/          fictional invoices (one with a deliberate error) + a sample Textract response
+sample_output/        committed snapshot of a run
 ```
 
 ## Tests
@@ -125,7 +160,8 @@ python -m unittest discover -s tests -v
 ```
 
 Covers clean invoices, total/subtotal/line-math mismatches, missing fields,
-empty line items, date-format warnings, and rounding tolerance.
+empty line items, date-format warnings, rounding tolerance, the Textract
+AnalyzeExpense parser, and OCR-confidence-driven review.
 
 ## Notes
 
