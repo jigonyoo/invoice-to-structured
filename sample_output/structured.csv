@@ -1,0 +1,4 @@
+file,invoice_number,vendor,bill_to,invoice_date,due_date,currency,subtotal,tax,total,line_item_count,confidence,needs_review,engine
+INV-1001.pdf,INV-1001,Northwind Supplies Ltd.,Aurora Retail Group,2026-06-03,2026-07-03,GBP,576.0,115.2,691.2,3,1.0,False,offline-heuristic
+INV-1002.pdf,INV-1002,Cedar & Co. Consulting,Bluepeak Ventures,2026-06-11,2026-06-25,USD,3780.0,0.0,3780.0,3,1.0,False,offline-heuristic
+INV-1003.pdf,INV-1003,Sunrise Logistics GmbH,Meridian Foods,2026-06-18,2026-07-18,EUR,1330.0,252.7,1632.7,3,0.66,True,offline-heuristic

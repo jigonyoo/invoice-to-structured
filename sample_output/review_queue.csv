@@ -1,0 +1,2 @@
+file,invoice_number,confidence,severity,code,reason
+INV-1003.pdf,INV-1003,0.66,error,total_mismatch,subtotal 1330.0 + tax 252.7 = 1582.7 but total is 1632.7

@@ -1,0 +1,134 @@
+[
+  {
+    "file": "INV-1001.pdf",
+    "engine": "offline-heuristic",
+    "invoice": {
+      "invoice_number": "INV-1001",
+      "invoice_date": "2026-06-03",
+      "due_date": "2026-07-03",
+      "vendor": "Northwind Supplies Ltd.",
+      "vendor_address": "14 Harbour Road, Manchester, M1 2AB, UK",
+      "bill_to": "Aurora Retail Group",
+      "currency": "GBP",
+      "line_items": [
+        {
+          "description": "Thermal receipt rolls (box of 50)",
+          "quantity": 12.0,
+          "unit_price": 18.5,
+          "amount": 222.0
+        },
+        {
+          "description": "Barcode label sheets (pack of 100)",
+          "quantity": 30.0,
+          "unit_price": 6.2,
+          "amount": 186.0
+        },
+        {
+          "description": "Handheld scanner cradle",
+          "quantity": 4.0,
+          "unit_price": 42.0,
+          "amount": 168.0
+        }
+      ],
+      "subtotal": 576.0,
+      "tax": 115.2,
+      "total": 691.2
+    },
+    "validation": {
+      "invoice_number": "INV-1001",
+      "confidence": 1.0,
+      "needs_review": false,
+      "issues": []
+    }
+  },
+  {
+    "file": "INV-1002.pdf",
+    "engine": "offline-heuristic",
+    "invoice": {
+      "invoice_number": "INV-1002",
+      "invoice_date": "2026-06-11",
+      "due_date": "2026-06-25",
+      "vendor": "Cedar & Co. Consulting",
+      "vendor_address": "500 Market St, Suite 12, San Francisco, CA 94105",
+      "bill_to": "Bluepeak Ventures",
+      "currency": "USD",
+      "line_items": [
+        {
+          "description": "Discovery workshop (half day)",
+          "quantity": 2.0,
+          "unit_price": 750.0,
+          "amount": 1500.0
+        },
+        {
+          "description": "Process mapping deliverable",
+          "quantity": 1.0,
+          "unit_price": 1200.0,
+          "amount": 1200.0
+        },
+        {
+          "description": "Follow-up advisory hours",
+          "quantity": 6.0,
+          "unit_price": 180.0,
+          "amount": 1080.0
+        }
+      ],
+      "subtotal": 3780.0,
+      "tax": 0.0,
+      "total": 3780.0
+    },
+    "validation": {
+      "invoice_number": "INV-1002",
+      "confidence": 1.0,
+      "needs_review": false,
+      "issues": []
+    }
+  },
+  {
+    "file": "INV-1003.pdf",
+    "engine": "offline-heuristic",
+    "invoice": {
+      "invoice_number": "INV-1003",
+      "invoice_date": "2026-06-18",
+      "due_date": "2026-07-18",
+      "vendor": "Sunrise Logistics GmbH",
+      "vendor_address": "Lagerstrasse 9, 20095 Hamburg, Germany",
+      "bill_to": "Meridian Foods",
+      "currency": "EUR",
+      "line_items": [
+        {
+          "description": "Pallet freight Hamburg -> Rotterdam",
+          "quantity": 8.0,
+          "unit_price": 120.0,
+          "amount": 960.0
+        },
+        {
+          "description": "Cold-chain surcharge",
+          "quantity": 8.0,
+          "unit_price": 35.0,
+          "amount": 280.0
+        },
+        {
+          "description": "Customs handling",
+          "quantity": 1.0,
+          "unit_price": 90.0,
+          "amount": 90.0
+        }
+      ],
+      "subtotal": 1330.0,
+      "tax": 252.7,
+      "total": 1632.7
+    },
+    "validation": {
+      "invoice_number": "INV-1003",
+      "confidence": 0.66,
+      "needs_review": true,
+      "issues": [
+        {
+          "code": "total_mismatch",
+          "severity": "error",
+          "message": "subtotal 1330.0 + tax 252.7 = 1582.7 but total is 1632.7"
+        }
+      ]
+    }
+  }
+]

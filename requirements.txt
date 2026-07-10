@@ -1,0 +1,6 @@
+# Runtime
+pdfplumber>=0.11      # PDF text extraction
+openai>=1.0           # only needed for --mode llm (structured extraction)
+
+# Dev / sample generation only
+reportlab>=4.0        # generates the synthetic sample invoices in scripts/
