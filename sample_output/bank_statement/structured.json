@@ -1,0 +1,163 @@
+[
+  {
+    "file": "BANK-4001-clean.json",
+    "doctype": "bank_statement",
+    "record_id": "****4821",
+    "engine": "offline-json",
+    "document": {
+      "account": "****4821",
+      "period": {
+        "start": "2026-06-01",
+        "end": "2026-06-30"
+      },
+      "opening_balance": 2500.0,
+      "closing_balance": 2975.0,
+      "transactions": [
+        {
+          "date": "2026-06-03",
+          "desc": "Synthetic Client Payment",
+          "debit": null,
+          "credit": 800.0,
+          "balance": 3300.0
+        },
+        {
+          "date": "2026-06-10",
+          "desc": "Fictional Cloud Hosting",
+          "debit": 125.0,
+          "credit": null,
+          "balance": 3175.0
+        },
+        {
+          "date": "2026-06-21",
+          "desc": "Synthetic Office Rent",
+          "debit": 200.0,
+          "credit": null,
+          "balance": 2975.0
+        }
+      ],
+      "extraction_confidence": 0.99
+    },
+    "validation": {
+      "confidence": 0.99,
+      "needs_review": false,
+      "issues": []
+    }
+  },
+  {
+    "file": "BANK-4002-balance-error.json",
+    "doctype": "bank_statement",
+    "record_id": "****4821",
+    "engine": "offline-json",
+    "document": {
+      "account": "****4821",
+      "period": {
+        "start": "2026-06-01",
+        "end": "2026-06-30"
+      },
+      "opening_balance": 2500.0,
+      "closing_balance": 2875.0,
+      "transactions": [
+        {
+          "date": "2026-06-03",
+          "desc": "Synthetic Client Payment",
+          "debit": null,
+          "credit": 800.0,
+          "balance": 3300.0
+        },
+        {
+          "date": "2026-06-10",
+          "desc": "Fictional Cloud Hosting",
+          "debit": 125.0,
+          "credit": null,
+          "balance": 3175.0
+        },
+        {
+          "date": "2026-06-21",
+          "desc": "Synthetic Office Rent",
+          "debit": 200.0,
+          "credit": null,
+          "balance": 2975.0
+        }
+      ],
+      "extraction_confidence": 0.99
+    },
+    "validation": {
+      "confidence": 0.65,
+      "needs_review": true,
+      "issues": [
+        {
+          "code": "closing_balance_mismatch",
+          "severity": "error",
+          "message": "opening + credits - debits = 2975.0, closing is 2875.0"
+        }
+      ]
+    }
+  },
+  {
+    "file": "BANK-4003-duplicate.json",
+    "doctype": "bank_statement",
+    "record_id": "****4821",
+    "engine": "offline-json",
+    "document": {
+      "account": "****4821",
+      "period": {
+        "start": "2026-06-01",
+        "end": "2026-06-30"
+      },
+      "opening_balance": 2500.0,
+      "closing_balance": 2850.0,
+      "transactions": [
+        {
+          "date": "2026-06-03",
+          "desc": "Synthetic Client Payment",
+          "debit": null,
+          "credit": 800.0,
+          "balance": 3300.0
+        },
+        {
+          "date": "2026-06-10",
+          "desc": "Fictional Cloud Hosting",
+          "debit": 125.0,
+          "credit": null,
+          "balance": 3175.0
+        },
+        {
+          "date": "2026-06-21",
+          "desc": "Synthetic Office Rent",
+          "debit": 200.0,
+          "credit": null,
+          "balance": 2975.0
+        },
+        {
+          "date": "2026-06-10",
+          "desc": "Fictional Cloud Hosting",
+          "debit": 125.0,
+          "credit": null,
+          "balance": 3175.0
+        }
+      ],
+      "extraction_confidence": 0.99
+    },
+    "validation": {
+      "confidence": 0.0,
+      "needs_review": true,
+      "issues": [
+        {
+          "code": "date_order",
+          "severity": "error",
+          "message": "Transaction 4: date is earlier than prior row"
+        },
+        {
+          "code": "running_balance_mismatch",
+          "severity": "error",
+          "message": "Transaction 4: expected balance 2850.0, printed 3175.0"
+        },
+        {
+          "code": "duplicate_transaction",
+          "severity": "error",
+          "message": "Duplicate transaction: 2026-06-10 | fictional cloud hosting | 125.0"
+        }
+      ]
+    }
+  }
+]

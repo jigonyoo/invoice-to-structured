@@ -23,11 +23,15 @@ import json
 import os
 import sys
 
-from pipeline.extract import extract_text, structure
-from pipeline.validate import validate
+from pipeline.doctypes.po import structure as structure_po, validate_po
+from pipeline.doctypes.bank_statement import structure as structure_bank, validate_bank_statement
 
 
 def process_file(path: str, mode: str, model: str) -> dict:
+    # Keep PDF dependencies isolated so PO/bank JSON demos remain stdlib-only.
+    from pipeline.extract import extract_text, structure
+    from pipeline.validate import validate
+
     text = extract_text(path)
     inv, engine = structure(text, mode=mode, model=model)
     result = validate(inv)
@@ -37,6 +41,37 @@ def process_file(path: str, mode: str, model: str) -> dict:
         "invoice": inv.to_dict(),
         "validation": result.to_dict(),
     }
+
+
+def process_json_file(path: str, doctype: str, mode: str, model: str) -> dict:
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+    if doctype == "po":
+        document, engine = structure_po(text, mode=mode, model=model)
+        validation = validate_po(document)
+        record_id = document.po_number
+    else:
+        document, engine = structure_bank(text, mode=mode, model=model)
+        validation = validate_bank_statement(document)
+        record_id = document.account
+    return {"file": os.path.basename(path), "doctype": doctype, "record_id": record_id,
+            "engine": engine, "document": document.to_dict(), "validation": validation.to_dict()}
+
+
+def write_json_outputs(records: list[dict], out_dir: str) -> None:
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "structured.json"), "w", encoding="utf-8") as handle:
+        json.dump(records, handle, indent=2, ensure_ascii=False)
+    with open(os.path.join(out_dir, "review_queue.csv"), "w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["file", "doctype", "record_id", "confidence", "severity", "code", "reason"])
+        for record in records:
+            if not record["validation"]["needs_review"]:
+                continue
+            for issue in record["validation"]["issues"]:
+                writer.writerow([record["file"], record["doctype"], record["record_id"],
+                                 record["validation"]["confidence"], issue["severity"],
+                                 issue["code"], issue["message"]])
 
 
 def write_outputs(records: list[dict], out_dir: str) -> None:
@@ -106,24 +141,34 @@ def print_summary(records: list[dict]) -> None:
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description="Validated invoice -> structured data pipeline")
-    p.add_argument("--input", default="sample_data", help="folder or glob of PDF invoices")
+    p = argparse.ArgumentParser(description="Validated document -> structured data pipeline")
+    p.add_argument("--doctype", choices=["invoice", "po", "bank_statement"], default="invoice")
+    p.add_argument("--input", help="input folder or glob (defaults to bundled samples for doctype)")
     p.add_argument("--output", default="output", help="output directory")
     p.add_argument("--mode", choices=["auto", "offline", "llm"], default="auto",
                    help="auto = LLM if OPENAI_API_KEY set, else offline heuristic")
     p.add_argument("--model", default="gpt-4o-mini", help="OpenAI model for llm mode")
     args = p.parse_args(argv)
 
-    pattern = args.input if args.input.endswith(".pdf") else os.path.join(args.input, "*.pdf")
+    input_path = args.input or ("sample_data" if args.doctype == "invoice" else f"sample_data/{args.doctype}")
+    suffix = ".pdf" if args.doctype == "invoice" else ".json"
+    pattern = input_path if input_path.endswith(suffix) else os.path.join(input_path, f"*{suffix}")
     files = sorted(glob.glob(pattern))
     if not files:
-        print(f"No PDFs found at {pattern!r}", file=sys.stderr)
+        print(f"No {suffix} files found at {pattern!r}", file=sys.stderr)
         return 1
 
-    records = [process_file(fp, args.mode, args.model) for fp in files]
-    write_outputs(records, args.output)
-    print_summary(records)
-    print(f"\nWrote structured.json, structured.csv, review_queue.csv to ./{args.output}/")
+    if args.doctype == "invoice":
+        records = [process_file(fp, args.mode, args.model) for fp in files]
+        write_outputs(records, args.output)
+        print_summary(records)
+    else:
+        records = [process_json_file(fp, args.doctype, args.mode, args.model) for fp in files]
+        write_json_outputs(records, args.output)
+        auto = sum(not row["validation"]["needs_review"] for row in records)
+        print(f"Processed {len(records)} {args.doctype} document(s): {auto} auto_accept | {len(records)-auto} needs_review")
+    names = "structured.json, structured.csv, review_queue.csv" if args.doctype == "invoice" else "structured.json, review_queue.csv"
+    print(f"\nWrote {names} to ./{args.output}/")
     return 0
 
 

@@ -1,0 +1,5 @@
+file,doctype,record_id,confidence,severity,code,reason
+BANK-4002-balance-error.json,bank_statement,****4821,0.65,error,closing_balance_mismatch,"opening + credits - debits = 2975.0, closing is 2875.0"
+BANK-4003-duplicate.json,bank_statement,****4821,0.0,error,date_order,Transaction 4: date is earlier than prior row
+BANK-4003-duplicate.json,bank_statement,****4821,0.0,error,running_balance_mismatch,"Transaction 4: expected balance 2850.0, printed 3175.0"
+BANK-4003-duplicate.json,bank_statement,****4821,0.0,error,duplicate_transaction,Duplicate transaction: 2026-06-10 | fictional cloud hosting | 125.0

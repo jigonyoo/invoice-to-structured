@@ -1,6 +1,7 @@
-# Invoice → Validated Structured Data
+# Documents → Validated Structured Data
 
-Turn messy invoice PDFs into clean, **validated** structured data (JSON + CSV),
+Turn invoices, purchase orders, and bank statements into clean, **validated**
+structured data (JSON + CSV),
 and automatically route only the trustworthy rows for auto-posting while sending
 anything suspicious to a human review queue.
 
@@ -16,6 +17,17 @@ human owns the review gate.
 ---
 
 ## What it does
+
+The repository now supports **three document types** plus one shared HITL trust
+layer. Invoice extraction keeps the original text-PDF and optional Textract
+paths; PO and bank-statement demos use synthetic JSON offline and can optionally
+use OpenAI JSON mode for varied layouts.
+
+| Document type | Deterministic validation |
+|---|---|
+| Invoice | line math, subtotal, tax/total, required fields, OCR confidence |
+| Purchase order | line math, subtotal, tax + shipping + grand total, required fields, currency, delivery ≥ order date |
+| Bank statement | opening + credits − debits = closing, running balance, date order, duplicate transaction, required fields |
 
 ```
    invoice  (text PDF  ── or ──  scanned / photo)
@@ -50,6 +62,13 @@ pip install -r requirements.txt
 
 # Offline demo — no API key needed. Runs on the bundled sample invoices.
 python run.py
+
+# Other bundled synthetic document types — still no key or network.
+python run.py --doctype po --output output/po
+python run.py --doctype bank_statement --output output/bank_statement
+
+# Shared confidence calibration, routing, review queue, audit log, and metrics.
+python review_demo.py
 
 # Your own invoices, using the LLM extractor:
 cp .env.example .env        # add OPENAI_API_KEY
@@ -145,7 +164,11 @@ pipeline/
   extract.py          PDF → text, and text → Invoice (LLM or offline heuristic)
   textract_extract.py scanned/image → AWS Textract AnalyzeExpense → Invoice + OCR confidence
   validate.py         deterministic checks (+ optional OCR confidence) → needs_review  ← the core
+  doctypes/po.py      PO schema/extraction + arithmetic/date/currency validation
+  doctypes/bank_statement.py  transaction schema + balance/duplicate/date validation
+  review.py           shared calibration, auto_accept/review/reject routing, audit + metrics
 run.py                batch a folder of text PDFs → structured.json / .csv / review_queue.csv
+review_demo.py        invoice + PO + bank statement through one HITL gate
 textract_demo.py      one scanned invoice → Textract → validated data (offline sample or live)
 tests/                unit tests for the validation engine and the Textract parser
 scripts/              generate the synthetic sample invoices
@@ -159,16 +182,41 @@ sample_output/        committed snapshot of a run
 python -m unittest discover -s tests -v
 ```
 
-Covers clean invoices, total/subtotal/line-math mismatches, missing fields,
+Includes `test_po.py`, `test_bank_statement.py`, and `test_review.py`. Covers
+clean documents, total/subtotal/line-math mismatches, missing fields,
 empty line items, date-format warnings, rounding tolerance, the Textract
-AnalyzeExpense parser, and OCR-confidence-driven review.
+AnalyzeExpense parser, OCR-confidence-driven review, balance reconciliation,
+duplicates, confidence calibration, routing thresholds, audit logs, and metrics.
+
+## Human-in-the-loop trust layer
+
+`pipeline/review.py` combines extraction confidence with deterministic
+validation confidence and routes each record to `auto_accept`, `needs_review`,
+or `reject`. Thresholds are configurable. Every decision contains a plain-language
+explanation and timestamped audit entries; batch output includes auto-accept,
+review, and reject rates plus Top-N failure reasons. Validation rules—not an
+LLM—control the decision.
+
+Committed snapshots live in `sample_output/po`, `sample_output/bank_statement`,
+and `sample_output/review`.
 
 ## Notes
 
 - All sample data is fictional; no client data is included.
-- Extends naturally to other document types (purchase orders, bank statements,
-  delivery notes) — same extract → validate → route shape.
+- All bundled PO and bank-statement records are synthetic and generated from
+  fixed definitions in `scripts/make_samples.py`.
 - Human-in-the-loop by design: the review queue is a feature, not a fallback.
+
+### Honest limitations
+
+- Offline PO and bank-statement extraction accepts the bundled normalized JSON;
+  arbitrary scans or layouts need the optional LLM/OCR front end and human QC.
+- Currency checking verifies one uppercase ISO-style code per document; it does
+  not perform exchange-rate conversion.
+- Duplicate detection is intentionally exact (`date + amount + description`),
+  so fuzzy duplicates require a domain-specific extension.
+- The synthetic samples demonstrate logic, not production accuracy on a
+  customer's document distribution.
 
 ## License
 

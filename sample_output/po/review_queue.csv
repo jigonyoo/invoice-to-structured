@@ -1,0 +1,5 @@
+file,doctype,record_id,confidence,severity,code,reason
+PO-3002-math-error.json,po,PO-3002,0.3,error,line_math,Line 2: 900.0 != 2.0 x 480.0 = 960.0
+PO-3002-math-error.json,po,PO-3002,0.3,error,subtotal_mismatch,Line items sum to 1800.0 but subtotal is 1860.0
+PO-3003-missing-low-confidence.json,po,PO-3003,0.04,error,missing_vendor,Missing required field: vendor
+PO-3003-missing-low-confidence.json,po,PO-3003,0.04,error,delivery_before_order,delivery_date is earlier than order_date

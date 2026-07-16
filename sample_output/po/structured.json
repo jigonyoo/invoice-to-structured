@@ -1,0 +1,141 @@
+[
+  {
+    "file": "PO-3001-clean.json",
+    "doctype": "po",
+    "record_id": "PO-3001",
+    "engine": "offline-json",
+    "document": {
+      "po_number": "PO-3001",
+      "vendor": "Fictional Office Supply Co.",
+      "order_date": "2026-07-01",
+      "delivery_date": "2026-07-15",
+      "currency": "USD",
+      "line_items": [
+        {
+          "sku": "CHAIR-01",
+          "desc": "Ergonomic chair",
+          "qty": 4.0,
+          "unit_price": 225.0,
+          "line_total": 900.0
+        },
+        {
+          "sku": "DESK-02",
+          "desc": "Standing desk",
+          "qty": 2.0,
+          "unit_price": 480.0,
+          "line_total": 960.0
+        }
+      ],
+      "subtotal": 1860.0,
+      "tax": 148.8,
+      "shipping": 75.0,
+      "grand_total": 2083.8,
+      "extraction_confidence": 0.98
+    },
+    "validation": {
+      "confidence": 0.98,
+      "needs_review": false,
+      "issues": []
+    }
+  },
+  {
+    "file": "PO-3002-math-error.json",
+    "doctype": "po",
+    "record_id": "PO-3002",
+    "engine": "offline-json",
+    "document": {
+      "po_number": "PO-3002",
+      "vendor": "Fictional Office Supply Co.",
+      "order_date": "2026-07-01",
+      "delivery_date": "2026-07-15",
+      "currency": "USD",
+      "line_items": [
+        {
+          "sku": "CHAIR-01",
+          "desc": "Ergonomic chair",
+          "qty": 4.0,
+          "unit_price": 225.0,
+          "line_total": 900.0
+        },
+        {
+          "sku": "DESK-02",
+          "desc": "Standing desk",
+          "qty": 2.0,
+          "unit_price": 480.0,
+          "line_total": 900.0
+        }
+      ],
+      "subtotal": 1860.0,
+      "tax": 148.8,
+      "shipping": 75.0,
+      "grand_total": 2083.8,
+      "extraction_confidence": 0.98
+    },
+    "validation": {
+      "confidence": 0.3,
+      "needs_review": true,
+      "issues": [
+        {
+          "code": "line_math",
+          "severity": "error",
+          "message": "Line 2: 900.0 != 2.0 x 480.0 = 960.0"
+        },
+        {
+          "code": "subtotal_mismatch",
+          "severity": "error",
+          "message": "Line items sum to 1800.0 but subtotal is 1860.0"
+        }
+      ]
+    }
+  },
+  {
+    "file": "PO-3003-missing-low-confidence.json",
+    "doctype": "po",
+    "record_id": "PO-3003",
+    "engine": "offline-json",
+    "document": {
+      "po_number": "PO-3003",
+      "vendor": null,
+      "order_date": "2026-07-01",
+      "delivery_date": "2026-06-29",
+      "currency": "USD",
+      "line_items": [
+        {
+          "sku": "CHAIR-01",
+          "desc": "Ergonomic chair",
+          "qty": 4.0,
+          "unit_price": 225.0,
+          "line_total": 900.0
+        },
+        {
+          "sku": "DESK-02",
+          "desc": "Standing desk",
+          "qty": 2.0,
+          "unit_price": 480.0,
+          "line_total": 960.0
+        }
+      ],
+      "subtotal": 1860.0,
+      "tax": 148.8,
+      "shipping": 75.0,
+      "grand_total": 2083.8,
+      "extraction_confidence": 0.72
+    },
+    "validation": {
+      "confidence": 0.04,
+      "needs_review": true,
+      "issues": [
+        {
+          "code": "missing_vendor",
+          "severity": "error",
+          "message": "Missing required field: vendor"
+        },
+        {
+          "code": "delivery_before_order",
+          "severity": "error",
+          "message": "delivery_date is earlier than order_date"
+        }
+      ]
+    }
+  }
+]
