@@ -1,0 +1,16 @@
+{
+  "po_number": "PO-3002",
+  "vendor": "Fictional Office Supply Co.",
+  "order_date": "2026-07-01",
+  "delivery_date": "2026-07-15",
+  "currency": "USD",
+  "line_items": [
+    {"sku": "CHAIR-01", "desc": "Ergonomic chair", "qty": 4, "unit_price": 225, "line_total": 900},
+    {"sku": "DESK-02", "desc": "Standing desk", "qty": 2, "unit_price": 480, "line_total": 900}
+  ],
+  "subtotal": 1860,
+  "tax": 148.8,
+  "shipping": 75,
+  "grand_total": 2083.8,
+  "extraction_confidence": 0.98
+}

@@ -1,9 +1,10 @@
-"""Generate synthetic invoice PDFs for the demo.
+"""Generate synthetic invoice PDFs and JSON documents for the demo.
 
 All data here is fictional. No client data is used, so the sample repo is safe
 to publish publicly. One invoice (INV-1003) contains an intentional arithmetic
 error so the validation engine visibly flags it for human review.
 """
+import json
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -13,6 +14,13 @@ from reportlab.pdfgen import canvas
 
 OUT = Path(__file__).resolve().parents[1] / "sample_data"
 OUT.mkdir(parents=True, exist_ok=True)
+
+
+def write_json_samples(folder, documents):
+    target = OUT / folder
+    target.mkdir(parents=True, exist_ok=True)
+    for filename, document in documents.items():
+        (target / filename).write_text(json.dumps(document, indent=2), encoding="utf-8")
 
 
 def money(v):
@@ -155,6 +163,18 @@ def main():
         tax_rate=0.19,
         break_total=True,
     )
+    po_base = {
+        "po_number": "PO-3001", "vendor": "Fictional Office Supply Co.",
+        "order_date": "2026-07-01", "delivery_date": "2026-07-15", "currency": "USD",
+        "line_items": [{"sku": "CHAIR-01", "desc": "Ergonomic chair", "qty": 4, "unit_price": 225, "line_total": 900},
+                       {"sku": "DESK-02", "desc": "Standing desk", "qty": 2, "unit_price": 480, "line_total": 960}],
+        "subtotal": 1860, "tax": 148.8, "shipping": 75, "grand_total": 2083.8,
+        "extraction_confidence": 0.98,
+    }
+    po_math = json.loads(json.dumps(po_base)); po_math["po_number"] = "PO-3002"; po_math["line_items"][1]["line_total"] = 900
+    po_missing = json.loads(json.dumps(po_base)); po_missing["po_number"] = "PO-3003"; po_missing["vendor"] = None; po_missing["delivery_date"] = "2026-06-29"; po_missing["extraction_confidence"] = 0.72
+    write_json_samples("po", {"PO-3001-clean.json": po_base, "PO-3002-math-error.json": po_math,
+                              "PO-3003-missing-low-confidence.json": po_missing})
     print("Wrote:", *[p.name for p in sorted(OUT.glob("*.pdf"))])
 
 
