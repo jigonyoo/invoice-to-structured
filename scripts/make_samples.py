@@ -175,6 +175,20 @@ def main():
     po_missing = json.loads(json.dumps(po_base)); po_missing["po_number"] = "PO-3003"; po_missing["vendor"] = None; po_missing["delivery_date"] = "2026-06-29"; po_missing["extraction_confidence"] = 0.72
     write_json_samples("po", {"PO-3001-clean.json": po_base, "PO-3002-math-error.json": po_math,
                               "PO-3003-missing-low-confidence.json": po_missing})
+    bank_base = {
+        "account": "****4821", "period": {"start": "2026-06-01", "end": "2026-06-30"},
+        "opening_balance": 2500, "closing_balance": 2975,
+        "transactions": [
+            {"date": "2026-06-03", "desc": "Synthetic Client Payment", "debit": None, "credit": 800, "balance": 3300},
+            {"date": "2026-06-10", "desc": "Fictional Cloud Hosting", "debit": 125, "credit": None, "balance": 3175},
+            {"date": "2026-06-21", "desc": "Synthetic Office Rent", "debit": 200, "credit": None, "balance": 2975}],
+        "extraction_confidence": 0.99,
+    }
+    bank_balance = json.loads(json.dumps(bank_base)); bank_balance["closing_balance"] = 2875
+    bank_duplicate = json.loads(json.dumps(bank_base)); bank_duplicate["transactions"].append(json.loads(json.dumps(bank_duplicate["transactions"][1]))); bank_duplicate["closing_balance"] = 2850
+    write_json_samples("bank_statement", {"BANK-4001-clean.json": bank_base,
+                                          "BANK-4002-balance-error.json": bank_balance,
+                                          "BANK-4003-duplicate.json": bank_duplicate})
     print("Wrote:", *[p.name for p in sorted(OUT.glob("*.pdf"))])
 
 

@@ -1,0 +1,10 @@
+{
+  "account": "****4821", "period": {"start": "2026-06-01", "end": "2026-06-30"},
+  "opening_balance": 2500, "closing_balance": 2850,
+  "transactions": [
+    {"date": "2026-06-03", "desc": "Synthetic Client Payment", "debit": null, "credit": 800, "balance": 3300},
+    {"date": "2026-06-10", "desc": "Fictional Cloud Hosting", "debit": 125, "credit": null, "balance": 3175},
+    {"date": "2026-06-21", "desc": "Synthetic Office Rent", "debit": 200, "credit": null, "balance": 2975},
+    {"date": "2026-06-10", "desc": "Fictional Cloud Hosting", "debit": 125, "credit": null, "balance": 3175}
+  ], "extraction_confidence": 0.99
+}
